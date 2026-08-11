@@ -160,6 +160,42 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     attempted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS site_visits (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER DEFAULT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    page_url VARCHAR(500) DEFAULT NULL,
+    user_agent VARCHAR(300) DEFAULT NULL,
+    session_id VARCHAR(64) DEFAULT NULL,
+    visited_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_visits_date ON site_visits(visited_at);
+CREATE INDEX IF NOT EXISTS idx_visits_user ON site_visits(user_id);
+CREATE INDEX IF NOT EXISTS idx_visits_session ON site_visits(session_id);
+
+CREATE TABLE IF NOT EXISTS external_searches (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER DEFAULT NULL,
+    query VARCHAR(200) NOT NULL,
+    source VARCHAR(50) NOT NULL,
+    results_count INTEGER DEFAULT 0,
+    searched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_searches_date ON external_searches(searched_at);
+
+CREATE TABLE IF NOT EXISTS compound_cache (
+    id SERIAL PRIMARY KEY,
+    compound_id INTEGER NOT NULL,
+    source VARCHAR(50) NOT NULL,
+    cache_key VARCHAR(200) NOT NULL,
+    cache_data JSONB DEFAULT NULL,
+    expires_at TIMESTAMP DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(compound_id, source, cache_key)
+);
+
 -- Seed data
 INSERT INTO users (name, email, password, role, institution, created_at) VALUES
 ('System Admin', 'admin@hazina-asili.com', '$2y$12$LN1Rh.LjDDT9TuO5RhGwOeDQhMqx3bRwFMGFhJXXMfYs3MnCKMQWi', 'admin', 'HAZINA ASILI', NOW()),

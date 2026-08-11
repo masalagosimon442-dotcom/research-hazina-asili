@@ -128,11 +128,20 @@ $_SESSION['last_activity'] = time();
 
 // ── Track Page Visit ──────────────────────────────────────────────────────────
 // Only track on GET requests (not POST/AJAX)
+// Track AFTER database is loaded
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['ajax'])) {
     try {
-        require_once __DIR__ . '/../models/SiteVisit.php';
-        (new SiteVisit())->record();
-    } catch (Throwable $e) { /* silently fail */ }
+        // Database must be loaded first
+        if (class_exists('Database')) {
+            require_once __DIR__ . '/../models/SiteVisit.php';
+            (new SiteVisit())->record();
+        }
+    } catch (Throwable $e) { 
+        // Log error in debug mode
+        if (APP_DEBUG) {
+            error_log("SiteVisit tracking failed: " . $e->getMessage());
+        }
+    }
 }
 
 // ── Load Dependencies ─────────────────────────────────────────────────────────
